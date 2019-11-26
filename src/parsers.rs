@@ -1,4 +1,4 @@
-use nom::character::complete::{alpha1, space1, space0};
+use nom::character::complete::{alpha1, space0, space1};
 
 use nom::error::ParseError;
 use nom::{AsChar, InputTakeAtPosition};
@@ -9,9 +9,23 @@ where
   <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
   input.split_at_position_complete(|item| {
-    let c = item.clone().as_char();
+    let c = item.as_char();
     (c == ' ' || c == '\t')
   })
+}
+
+pub fn not_space1<T, E: ParseError<T>>(input: T) -> nom::IResult<T, T, E>
+where
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+{
+  input.split_at_position1_complete(
+    |item| {
+      let c = item.clone().as_char();
+      (c == ' ' || c == '\t')
+    },
+    nom::error::ErrorKind::Space,
+  )
 }
 
 named!(uppercase_name<&str, &str>, take_while1!(|c: char| c.is_uppercase()));
@@ -22,7 +36,7 @@ named!(pub bash_cmd<&str, (Option<Vec<(&str, &str)>>, &str, Option<Vec<&str>>)>,
   do_parse!(
     env: opt!(env_vars) >>
     space0 >>
-    cmd: alpha1 >>
+    cmd: not_space1 >>
     space0 >>
     args: opt!(args) >>
     (env, cmd, args)

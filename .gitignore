@@ -66,3 +66,5 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/git,rust,windows,visualstudiocode
+
+data/history
